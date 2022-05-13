@@ -22,7 +22,6 @@ The following tables lists the configurable parameters of the kdave chart and th
 | `image.tag`               | The kdave server container image tag                                                                 | `1.0.1`                                                           |
 | `image.pullPolicy`        | The application container image pull policy                                                          | `IfNotPresent`                                                    |
 | `nodeSelector`            | Node labels for the application pod assignment                                                       | `{}`                                                              |
-| `priorityClassName`       | Priority class name                                                                                  | `wf-cluster-critical`                                             |
 | `tolerations`             | The application pod toleration for taints                                                            | `[]`                                                              |
 | `affinity`                | The application pod affinity                                                                         | `{}`                                                              |
 | `annotations`             | Annotations to be added to the application pod                                                       | `{}`                                                              |
