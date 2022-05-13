@@ -1,0 +1,86 @@
+# Default values for kdave.
+# Declare variables to be passed into your templates.
+
+# How many kdave pods should run in deployment
+replicaCount: 1
+name: kdave
+debug:
+  enable: false
+
+rbac:
+  # If true, create & use RBAC resources
+  create: true
+  pspEnabled: true
+  # Ignored if rbac.create is true
+  serviceAccountName: default
+
+image:
+  repository: aelbakry/kdave-server
+  tag: 1.0.1
+  pullPolicy: IfNotPresent
+
+resources:
+  limits:
+    cpu: 1
+    memory: 1024Mi
+  requests:
+    cpu: 500m
+    memory: 512Mi
+
+livenessProbe:
+  targetPort: 8000
+  initialDelaySeconds: 60
+  periodSeconds: 180
+  timeoutSeconds: 3
+  failureThreshold: 3
+  successThreshold: 1
+
+securityContext:
+  runAsUser: 1003
+  runAsGroup: 1003
+
+service:
+  exporterPort: 80
+  targetPort: 8000
+
+updateStrategy:
+  type: Recreate
+
+extraArgs: []
+
+nodeSelector: {}
+
+tolerations: []
+
+affinity: {}
+
+podLabels: {}
+
+podAnnotations: {}
+
+apiVersionsInspector:
+  enabled: true
+  replicaCount: 1
+  port: 8000
+  image:
+    repository: aelbakry/kdave-service
+    tag: 1.0.1
+    pullPolicy: IfNotPresent
+  ingress:
+    enabled: true
+    tlsEnabled: true
+    serviceFQDN: kube-api-inspector.domain.com
+  resources:
+    limits:
+      cpu: 1
+      memory: 1024Mi
+    requests:
+      cpu: 500m
+      memory: 512Mi
+
+# Kdave configuration
+threads: 5
+interval: 12h
+max: 100
+# Helm binary. Use "helm" for helm V2 and "helm3" for helm V3
+helmBinary: helm

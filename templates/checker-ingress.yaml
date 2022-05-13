@@ -1,0 +1,40 @@
+#
+# kdave/templates/checker-ingress.yaml
+#
+# Ingress for the api-versions-inspector app.
+#
+
+{{ if .Values.apiVersionsInspector.enabled }}
+apiVersion: networking.k8s.io/v1
+kind: Ingress
+metadata:
+  name: api-versions-inspector
+  labels:
+    app: {{ .Release.Name }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+    heritage: {{ .Release.Service }}
+    release: {{ .Release.Name }}
+  annotations:
+    "kubernetes.io/ingress.class": "nginx"
+    {{- if .Values.apiVersionsInspector.ingress.tlsEnabled }}
+    "cert-manager.io/cluster-issuer": "vault-issuer"
+    {{- end }}
+spec:
+{{- if .Values.apiVersionsInspector.ingress.tlsEnabled }}
+  tls:
+    - hosts:
+      - {{ .Values.apiVersionsInspector.ingress.serviceFQDN }}
+      secretName: api-versions-inspector-tls
+{{- end }}
+  rules:
+    - host: {{ .Values.apiVersionsInspector.ingress.serviceFQDN }}
+      http:
+        paths:
+        - path: /
+          pathType: ImplementationSpecific
+          backend:
+            service:
+              name: api-versions-inspector
+              port:
+                number: {{ .Values.apiVersionsInspector.port }}
+{{- end }}

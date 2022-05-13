@@ -1,0 +1,20 @@
+kind: Service
+apiVersion: v1
+metadata:
+  annotations:
+    prometheus.io/scrape: "true"
+  name: {{ template "kdave.fullname" . }}
+  labels:
+    app: {{ .Release.Name }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+    heritage: {{ .Release.Service }}
+    project: {{ .Chart.Name }}
+    release: {{ .Release.Name }}
+spec:
+  selector:
+    app: {{ include "kdave.name" . }}
+    release: {{ .Release.Name }}
+  ports:
+    - name: metrics
+      port: {{ .Values.service.exporterPort }}
+      targetPort: {{ .Values.service.targetPort }}

@@ -1,0 +1,98 @@
+{{- if .Values.apiVersionsInspector.enabled -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: api-versions-inspector
+  labels:
+    app: {{ .Release.Name }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+    heritage: {{ .Release.Service }}
+    project: {{ .Chart.Name }}
+    release: {{ .Release.Name }}
+spec:
+  replicas: {{ .Values.apiVersionsInspector.replicaCount }}
+  selector:
+    matchLabels:
+      app: {{ .Release.Name }}
+      component: api-versions-inspector
+  template:
+    metadata:
+      labels:
+        app: {{ .Release.Name }}
+        component: api-versions-inspector
+      {{- if .Values.apiVersionsInspector.podLabels }}
+{{ toYaml .Values.apiVersionsInspector.podLabels | indent 8}}
+      {{- end }}
+    {{- if .Values.apiVersionsInspector.annotations }}
+      annotations:
+{{ toYaml .Values.apiVersionsInspector.annotations | indent 8 }}
+    {{- end }}
+    spec:
+      {{- if .Values.priorityClassName }}
+      priorityClassName: {{ .Values.priorityClassName | quote }}
+      {{- end }}
+      containers:
+        - name: api-versions-inspector
+          image: "{{ .Values.apiVersionsInspector.image.repository }}:{{ .Values.apiVersionsInspector.image.tag }}"
+          imagePullPolicy: {{ .Values.apiVersionsInspector.image.pullPolicy }}
+          env:
+            # Used to trigger rolling update on config change
+            - name: CONFIG_HASH
+              value: {{ tpl (toYaml .Values) . | sha256sum }}
+          args:
+            {{- if .Values.apiVersionsInspector.address }}
+            - --address={{ .Values.apiVersionsInspector.address }}
+            {{- end }}
+            {{- if .Values.apiVersionsInspector.port }}
+            - --port={{ .Values.apiVersionsInspector.port }}
+            {{- end }}
+            {{- if .Values.helmBinary }}
+            - --helm-binary={{ .Values.helmBinary }}
+            {{- end }}
+
+{{- with .Values.apiVersionsInspector.extraArgs }}
+{{ toYaml . | indent 10 }}
+{{- end }}
+          {{- if .Values.apiVersionsInspector.livenessProbe }}
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: {{ .Values.apiVersionsInspector.livenessProbe.targetPort }}
+            initialDelaySeconds: {{ .Values.apiVersionsInspector.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.apiVersionsInspector.livenessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.apiVersionsInspector.livenessProbe.timeoutSeconds }}
+            successThreshold: {{ .Values.apiVersionsInspector.livenessProbe.successThreshold }}
+            failureThreshold: {{ .Values.apiVersionsInspector.livenessProbe.failureThreshold }}
+          {{- end }}
+          {{- if .Values.readinessProbe }}
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: {{ .Values.apiVersionsInspector.readinessProbe.targetPort }}
+            initialDelaySeconds: {{ .Values.apiVersionsInspector.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.apiVersionsInspector.readinessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.apiVersionsInspector.readinessProbe.timeoutSeconds }}
+            successThreshold: {{ .Values.apiVersionsInspector.readinessProbe.successThreshold }}
+            failureThreshold: {{ .Values.apiVersionsInspector.readinessProbe.failureThreshold }}
+          {{- end }}
+          resources:
+{{ toYaml .Values.apiVersionsInspector.resources | indent 12 }}
+    {{- with .Values.securityContext }}
+      securityContext:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.apiVersionsInspector.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.apiVersionsInspector.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+
+    {{- with .Values.apiVersionsInspector.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+      serviceAccountName: {{ if .Values.rbac.create }}{{ template "kdave.fullname" . }}{{ else }}"{{ .Values.rbac.serviceAccountName }}"{{ end }}
+{{- end -}}

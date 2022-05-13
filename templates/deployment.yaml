@@ -1,0 +1,124 @@
+{{- $top := . -}}
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: {{ template "kdave.fullname" . }}
+  labels:
+    app: {{ .Release.Name }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+    heritage: {{ .Release.Service }}
+    project: {{ .Chart.Name }}
+    release: {{ .Release.Name }}
+spec:
+  replicas: {{ .Values.replicaCount }}
+  strategy:
+{{ toYaml .Values.updateStrategy | indent 4 }}
+  selector:
+    matchLabels:
+      app: {{ include "kdave.name" . }}
+      release: {{ .Release.Name }}
+  template:
+    metadata:
+      labels:
+        app: {{ include "kdave.name" . }}
+        release: {{ .Release.Name }}
+      {{- if .Values.podLabels }}
+{{ toYaml .Values.podLabels | indent 8}}
+      {{- end }}
+    {{- if .Values.annotations }}
+      annotations:
+{{ toYaml .Values.annotations | indent 8 }}
+    {{- end }}
+    spec:
+      {{- if .Values.priorityClassName }}
+      priorityClassName: {{ .Values.priorityClassName | quote }}
+      {{- end }}
+      containers:
+        - name: {{ .Chart.Name }}
+          image: "{{ .Values.image.repository }}:{{ .Values.image.tag }}"
+          imagePullPolicy: {{ .Values.image.pullPolicy }}
+          env:
+            # Used to trigger rolling update on config change
+            - name: CONFIG_HASH
+              value: {{ tpl (toYaml .Values) . | sha256sum }}
+          args:
+            {{- if .Values.interval }}
+            - --interval={{ .Values.interval }}
+            {{- end }}
+            {{- if .Values.delay }}
+            - --delay={{ .Values.delay }}
+            {{- end }}
+            {{- if .Values.threads }}
+            - --threads={{ .Values.threads }}
+            {{- end }}
+            {{- if .Values.max }}
+            - --max={{ .Values.max }}
+            {{- end }}
+            {{- if .Values.helmBinary }}
+            - --helm-binary={{ .Values.helmBinary }}
+            {{- end }}
+            {{- if .Values.debug.enable }}
+            - --debug
+            {{- end }}
+            {{- if .Values.address }}
+            - --address={{ .Values.address }}
+            {{- end }}
+            {{- if .Values.port }}
+            - --port={{ .Values.port }}
+            {{- end }}
+            {{- if .Values.data_file }}
+            - --data-file={{ .Values.dataFile }}
+            {{- end }}
+
+{{- with .Values.extraArgs }}
+{{ toYaml . | indent 10 }}
+{{- end }}
+          {{- if .Values.livenessProbe }}
+          livenessProbe:
+            httpGet:
+              path: /health
+              port: {{ .Values.livenessProbe.targetPort }}
+            initialDelaySeconds: {{ .Values.livenessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.livenessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.livenessProbe.timeoutSeconds }}
+            successThreshold: {{ .Values.livenessProbe.successThreshold }}
+            failureThreshold: {{ .Values.livenessProbe.failureThreshold }}
+          {{- end }}
+          {{- if .Values.readinessProbe }}
+          readinessProbe:
+            httpGet:
+              path: /healthz
+              port: {{ .Values.readinessProbe.targetPort }}
+            initialDelaySeconds: {{ .Values.readinessProbe.initialDelaySeconds }}
+            periodSeconds: {{ .Values.readinessProbe.periodSeconds }}
+            timeoutSeconds: {{ .Values.readinessProbe.timeoutSeconds }}
+            successThreshold: {{ .Values.readinessProbe.successThreshold }}
+            failureThreshold: {{ .Values.readinessProbe.failureThreshold }}
+          {{- end }}
+          volumeMounts:
+            - mountPath: /app/data/
+              name: data
+          resources:
+{{ toYaml .Values.resources | indent 12 }}
+    {{- with .Values.securityContext }}
+      securityContext:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.nodeSelector }}
+      nodeSelector:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+    {{- with .Values.affinity }}
+      affinity:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+      volumes:
+        - name: data
+          persistentVolumeClaim:
+            claimName: {{ template "kdave.fullname" . }}-pvc
+
+    {{- with .Values.tolerations }}
+      tolerations:
+{{ toYaml . | indent 8 }}
+    {{- end }}
+      serviceAccountName: {{ if .Values.rbac.create }}{{ template "kdave.fullname" . }}{{ else }}"{{ .Values.rbac.serviceAccountName }}"{{ end }}

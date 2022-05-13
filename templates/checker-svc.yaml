@@ -1,0 +1,19 @@
+{{- if .Values.apiVersionsInspector.enabled -}}
+kind: Service
+apiVersion: v1
+metadata:
+  name: "api-versions-inspector"
+  labels:
+    app: {{ .Release.Name }}
+    chart: {{ .Chart.Name }}-{{ .Chart.Version }}
+    heritage: {{ .Release.Service }}
+    project: {{ .Chart.Name }}
+    release: {{ .Release.Name }}
+spec:
+  selector:
+    app: {{ .Release.Name }}
+    component: "api-versions-inspector"
+  ports:
+    - port: {{ .Values.apiVersionsInspector.port }}
+      targetPort: {{ .Values.apiVersionsInspector.port }}
+{{- end -}}
