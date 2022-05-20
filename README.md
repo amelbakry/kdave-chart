@@ -1,6 +1,6 @@
 # kdave
 
-The [kdave](https://github.com/wayfair-incubator/kdave) (Kubernetes Depredated API Versions Exporter) checks for any deprecated or removed apiVersions in the cluster and exports them in a Prometheus metrics format. You can integrate it with Prometheus and Alertmanager to receive notifications before upgrading the cluster and break the current workload. It exports detailed metrics such as whether the used apiVersion is deprecated, removed, removed_in_next_release, removed_in_next_2_releases, replacement_api, etc.
+The [kdave](https://github.com/wayfair-incubator/kdave) (Kubernetes Depredated API Versions Exporter) checks for any deprecated or removed apiVersions in the cluster and exports them in a Prometheus metrics format. You can integrate it with Prometheus and Alertmanager to receive notifications before upgrading the cluster and break the current workload. It exports detailed metrics such as whether the used apiVersion is `deprecated`, `removed`, `removed_in_next_release`, `removed_in_next_2_releases`, `replacement_api`, etc.
 
 ## Configuration
 
