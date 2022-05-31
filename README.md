@@ -19,7 +19,7 @@ The following tables lists the configurable parameters of the kdave chart and th
 | `address`                 | The IP address for the Flask server to serve on                                                      | `0.0.0.0`                                                         |
 | `port`                    | The Port for the Flask server to serve on                                                            | `8000`                                                            |
 | `image.repository`        | The kdave server container image repository                                                          | `aelbakry/kdave-server`                                           |
-| `image.tag`               | The kdave server container image tag                                                                 | `1.0.1`                                                           |
+| `image.tag`               | The kdave server container image tag                                                                 | `1.0.2`                                                           |
 | `image.pullPolicy`        | The application container image pull policy                                                          | `IfNotPresent`                                                    |
 | `nodeSelector`            | Node labels for the application pod assignment                                                       | `{}`                                                              |
 | `tolerations`             | The application pod toleration for taints                                                            | `[]`                                                              |
