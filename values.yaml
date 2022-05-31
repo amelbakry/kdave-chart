@@ -16,7 +16,7 @@ rbac:
 
 image:
   repository: aelbakry/kdave-server
-  tag: 1.0.1
+  tag: 1.0.2
   pullPolicy: IfNotPresent
 
 resources:
@@ -64,7 +64,7 @@ apiVersionsInspector:
   port: 8000
   image:
     repository: aelbakry/kdave-service
-    tag: 1.0.1
+    tag: 1.0.2
     pullPolicy: IfNotPresent
   ingress:
     enabled: true
