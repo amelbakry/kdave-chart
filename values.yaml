@@ -38,6 +38,7 @@ livenessProbe:
 securityContext:
   runAsUser: 1003
   runAsGroup: 1003
+  fsGroup: 1003
 
 service:
   exporterPort: 80
